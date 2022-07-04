@@ -1,11 +1,11 @@
 package com.pelinhangisi.userauthservice.security;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 
 
-@Service
+
+@Component
 public class JwtUtil {
-
 
 }
