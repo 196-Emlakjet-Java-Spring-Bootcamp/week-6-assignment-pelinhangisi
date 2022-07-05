@@ -1,44 +1,50 @@
 package com.pelinhangisi.userauthservice.controller;
 
-
+import com.pelinhangisi.userauthservice.dto.UserLoginRequest;
+import com.pelinhangisi.userauthservice.dto.UserRequest;
 import com.pelinhangisi.userauthservice.entity.User;
-import com.pelinhangisi.userauthservice.service.AuthenticationService;
+import com.pelinhangisi.userauthservice.security.JwtProvider;
 import com.pelinhangisi.userauthservice.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping(value = "/api/user")
 @RequiredArgsConstructor
 public class UserController {
 
-    private AuthenticationService authenticationService;
-    private UserService userService;
+    private final JwtProvider jwtProvider;
+    private final AuthenticationManager authenticationManager;
+    private final UserService userService;
 
-
-    //Kullanıcı kayıt yaptırırken ismini girdiğinde daha önceden var ise bunu belirten, eğer yeni bir kullanıcı ise
-    //yeni bir kullanıcı oluşturup kaydeden bölüm.
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(User user){
-        if(userService.findByUserName(user.getUsername()).isPresent()){
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        } else {
-            return new ResponseEntity<>(UserService.saveUser(user), HttpStatus.CREATED);
-        }
+    public void signUp(@RequestBody UserRequest userRequest){
+        userService.save(userRequest);
     }
 
-    //Kullanıcı giriş yaptığında kullanıcıya token döndüren bölüm.
+
     @PostMapping("/signin")
-    public ResponseEntity<?> signIn(@RequestBody User user){
-        return new ResponseEntity<>(authenticationService.signInAndReturnJWT(user), HttpStatus.OK);
+    public String getToken(@RequestBody UserLoginRequest userLoginRequest) throws Exception{
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userLoginRequest.getUsername(), userLoginRequest.getPassword()));
+        } catch (BadCredentialsException exception){
+            throw new Exception("Username not found" , exception);
+        }
+        final UserDetails userDetails = userService.loadUserByUsername(userLoginRequest.getUsername());
+        final String jwt = jwtProvider.generateToken(userDetails);
+        return jwt;
     }
 
-
+    @GetMapping
+    public List<User> findAll() {
+        return userService.findAll();
+    }
 
 
 }

@@ -2,42 +2,45 @@ package com.pelinhangisi.userauthservice.service;
 
 import com.pelinhangisi.userauthservice.dao.UserRepository;
 
+import com.pelinhangisi.userauthservice.dto.UserRequest;
 import com.pelinhangisi.userauthservice.entity.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+
 
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
-
-    //User kaydetmek için kullanılan bölüm.
-    public static User saveUser(@Lazy User user){
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+    public void save(UserRequest userRequest){
+        User user = new User();
+        user.setUsername(userRequest.getUsername());
+        user.setPassword(userRequest.getPassword());
         user.setCreateTime(LocalDateTime.now());
-        return userRepository.save(user);
+        user.setFullname(userRequest.getFullname());
+        userRepository.save(user);
     }
 
 
-    public Optional<User> findByUserName(String username){
-        return userRepository.findByUsername(username);
-    }
-
-
-    // bütün userları bulmak için kullanılan bölüm
-    public List<User> findAllUsers(){
+    public List<User> findAll(){
         return userRepository.findAll();
     }
 
 
+
+
+    @Override
+    public User loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username);
+    }
 }
