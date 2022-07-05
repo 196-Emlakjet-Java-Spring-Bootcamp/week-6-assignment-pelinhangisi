@@ -18,8 +18,11 @@ public class User {
     @Column(name = "user_name")
     private String username;
 
+    @Column(name = "password")
+    private String password;
+
     @Column(name = "full_name", nullable = false)
-    private String fullName;
+    private String fullname;
 
     @Column(name = "created_time")
     private LocalDateTime createTime;
