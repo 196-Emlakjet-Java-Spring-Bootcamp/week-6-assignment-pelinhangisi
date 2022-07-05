@@ -23,12 +23,13 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
 
+    //kullanıcı kayıt yapabilmesi adına oluşturulan bölüm
     @PostMapping("/signup")
     public void signUp(@RequestBody UserRequest userRequest){
         userService.save(userRequest);
     }
 
-
+    //kullanıcı giriş yapabilmesi adına oluşturulan bölüm
     @PostMapping("/signin")
     public String getToken(@RequestBody UserLoginRequest userLoginRequest) throws Exception{
         try {
